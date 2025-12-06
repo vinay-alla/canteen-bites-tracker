@@ -1,17 +1,19 @@
 import { ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface CartButtonProps {
   itemCount: number;
   totalPrice: number;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export const CartButton = ({ itemCount, totalPrice, onClick }: CartButtonProps) => {
   if (itemCount === 0) return null;
 
   return (
-    <button
+    <Link
+      to="/cart"
       onClick={onClick}
       className={cn(
         'fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-auto',
@@ -33,6 +35,6 @@ export const CartButton = ({ itemCount, totalPrice, onClick }: CartButtonProps) 
       <div className="h-6 w-px bg-primary-foreground/30 hidden md:block" />
       <span className="font-extrabold text-lg">₹{totalPrice}</span>
       <span className="hidden md:inline font-semibold">View Cart →</span>
-    </button>
+    </Link>
   );
 };

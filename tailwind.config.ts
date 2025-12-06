@@ -72,6 +72,14 @@ export default {
           bg: "hsl(var(--cart-bg))",
           border: "hsl(var(--cart-border))",
         },
+        coins: {
+          DEFAULT: "hsl(var(--coins))",
+          light: "hsl(var(--coins-light))",
+        },
+        discount: {
+          DEFAULT: "hsl(var(--discount))",
+          light: "hsl(var(--discount-light))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
