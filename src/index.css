@@ -56,6 +56,11 @@
     --cart-bg: 24 100% 97%;
     --cart-border: 24 80% 85%;
 
+    --coins: 45 93% 47%;
+    --coins-light: 45 90% 95%;
+    --discount: 280 85% 55%;
+    --discount-light: 280 80% 96%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -101,6 +106,9 @@
     
     --cart-bg: 25 30% 10%;
     --cart-border: 24 40% 25%;
+
+    --coins-light: 45 50% 15%;
+    --discount-light: 280 40% 15%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;

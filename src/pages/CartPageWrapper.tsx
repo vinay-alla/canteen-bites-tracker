@@ -1,19 +1,20 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Snack, CartItem, Coupon } from '@/types/snack';
+import { CartItem, Coupon, Snack } from '@/types/snack';
 import { initialSnacks } from '@/data/initialSnacks';
 import { Header } from '@/components/Header';
-import { MenuPage } from '@/pages/MenuPage';
+import { CartPage } from '@/pages/CartPage';
 import { AdminPanel } from '@/components/AdminPanel';
 import { toast } from '@/hooks/use-toast';
 
 const STORAGE_KEY = 'canteen-snacks';
 const CART_STORAGE_KEY = 'canteen-cart';
 const COINS_STORAGE_KEY = 'canteen-coins';
+const COUPON_STORAGE_KEY = 'canteen-coupon';
 
-const Index = () => {
+const CartPageWrapper = () => {
   const navigate = useNavigate();
-  
+
   const [snacks, setSnacks] = useState<Snack[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : initialSnacks;
@@ -29,7 +30,12 @@ const Index = () => {
     return saved ? JSON.parse(saved) : 100;
   });
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(() => {
+    const saved = localStorage.getItem(COUPON_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [usedCoins, setUsedCoins] = useState(0);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
@@ -47,13 +53,9 @@ const Index = () => {
     localStorage.setItem(COINS_STORAGE_KEY, JSON.stringify(coins));
   }, [coins]);
 
-  // Filtered snacks
-  const filteredSnacks = useMemo(() => {
-    if (!searchQuery.trim()) return snacks;
-    return snacks.filter((s) =>
-      s.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [snacks, searchQuery]);
+  useEffect(() => {
+    localStorage.setItem(COUPON_STORAGE_KEY, JSON.stringify(appliedCoupon));
+  }, [appliedCoupon]);
 
   // Cart handlers
   const addToCart = (snack: Snack) => {
@@ -67,10 +69,6 @@ const Index = () => {
         );
       }
       return [...prev, { snack, quantity: 1 }];
-    });
-    toast({
-      title: `${snack.emoji} Added to cart`,
-      description: `${snack.name} - ₹${snack.price}`,
     });
   };
 
@@ -88,6 +86,36 @@ const Index = () => {
     });
   };
 
+  const clearCart = () => {
+    setCart([]);
+    setAppliedCoupon(null);
+    setUsedCoins(0);
+    toast({
+      title: '🗑️ Cart cleared',
+      description: 'All items removed from cart',
+    });
+  };
+
+  const handlePlaceOrder = () => {
+    const subtotal = cart.reduce((sum, item) => sum + item.snack.price * item.quantity, 0);
+    const couponDiscount = appliedCoupon ? Math.min(appliedCoupon.discount, subtotal) : 0;
+    const total = Math.max(0, subtotal - couponDiscount - usedCoins);
+    const earnedCoins = Math.floor(total / 10);
+
+    // Deduct used coins and add earned coins
+    setCoins((prev) => prev - usedCoins + earnedCoins);
+    setCart([]);
+    setAppliedCoupon(null);
+    setUsedCoins(0);
+
+    toast({
+      title: '🎉 Order Placed Successfully!',
+      description: `You earned ${earnedCoins} coins! Total: ₹${total}`,
+    });
+
+    navigate('/');
+  };
+
   // Admin handlers
   const updateSnack = (id: string, updates: Partial<Snack>) => {
     setSnacks((prev) =>
@@ -101,10 +129,6 @@ const Index = () => {
       id: Date.now().toString(),
     };
     setSnacks((prev) => [...prev, newSnack]);
-    toast({
-      title: '✅ Snack added',
-      description: `${snack.name} has been added to the menu`,
-    });
   };
 
   const deleteSnack = (id: string) => {
@@ -120,14 +144,17 @@ const Index = () => {
         onOpenAdmin={() => setIsAdminOpen(true)}
       />
 
-      <MenuPage
-        snacks={filteredSnacks}
+      <CartPage
         cart={cart}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onAddToCart={addToCart}
-        onRemoveFromCart={removeFromCart}
-        onOpenCart={() => navigate('/cart')}
+        coins={coins}
+        appliedCoupon={appliedCoupon}
+        onAddItem={addToCart}
+        onRemoveItem={removeFromCart}
+        onClearCart={clearCart}
+        onApplyCoupon={setAppliedCoupon}
+        onRemoveCoupon={() => setAppliedCoupon(null)}
+        onPlaceOrder={handlePlaceOrder}
+        onUseCoins={setUsedCoins}
       />
 
       <AdminPanel
@@ -142,4 +169,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default CartPageWrapper;

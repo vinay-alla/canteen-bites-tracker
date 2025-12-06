@@ -45,6 +45,7 @@ export const AdminPanel = ({
       name: newSnack.name,
       price: Number(newSnack.price),
       emoji: newSnack.emoji,
+      image: `https://placehold.co/400x300/f97316/white?text=${encodeURIComponent(newSnack.emoji)}`,
       category: newSnack.category,
       status: 'available',
     });
